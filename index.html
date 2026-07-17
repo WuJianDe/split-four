@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>四宮格圖片切割工具</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-labelledby="app-title">
+        <div class="intro">
+          <p class="eyebrow">Split Four</p>
+          <h1 id="app-title">四宮格圖片切割工具</h1>
+          <p>上傳一張 2x2 四宮格圖片，系統會自動切成四張獨立圖片，保留原始解析度。</p>
+        </div>
+
+        <label class="upload-zone" for="imageInput" id="dropZone">
+          <input id="imageInput" type="file" accept="image/*" />
+          <span class="upload-icon" aria-hidden="true">+</span>
+          <span class="upload-title">選擇圖片或拖曳到這裡</span>
+          <span class="upload-meta">支援 JPG、PNG、WEBP 等常見圖片格式</span>
+        </label>
+
+        <div class="actions">
+          <button id="downloadAll" class="primary-button" type="button" disabled>下載全部</button>
+          <button id="resetButton" class="ghost-button" type="button" disabled>重新選擇</button>
+        </div>
+      </section>
+
+      <section class="preview-panel" aria-live="polite">
+        <div class="preview-heading">
+          <h2>切割預覽</h2>
+          <p id="statusText">尚未上傳圖片</p>
+        </div>
+
+        <div class="preview-grid" id="previewGrid">
+          <article class="tile placeholder">
+            <span>左上</span>
+          </article>
+          <article class="tile placeholder">
+            <span>右上</span>
+          </article>
+          <article class="tile placeholder">
+            <span>左下</span>
+          </article>
+          <article class="tile placeholder">
+            <span>右下</span>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
