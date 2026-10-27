@@ -39,4 +39,4 @@ jobs:
           fi
           target="$PUBLIC_HTML/split-four"
           ssh -i ~/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes ade14134@157.230.242.227 "mkdir -p '$target'"
-          scp -i ~/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes index.html styles.css script.js zip.js "ade14134@157.230.242.227:$target/"
+          scp -O -i ~/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes index.html styles.css script.js zip.js "ade14134@157.230.242.227:$target/"
