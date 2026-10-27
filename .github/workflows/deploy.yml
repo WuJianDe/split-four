@@ -1,0 +1,42 @@
+name: Deploy to Cloudways
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudways-split-four
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.CLOUDWAYS_SSH_KNOWN_HOSTS }}
+        run: |
+          set -eu
+          test -n "$SSH_PRIVATE_KEY" && test -n "$SSH_KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_deploy ~/.ssh/known_hosts
+      - name: Upload website
+        env:
+          PUBLIC_HTML: /home/master/applications/nnbcjxmqpm/public_html
+        run: |
+          set -eu
+          if [[ ! "$PUBLIC_HTML" =~ ^/[a-zA-Z0-9_./-]+/public_html$ || "$PUBLIC_HTML" == *..* ]]; then
+            echo 'Invalid public_html directory.' >&2
+            exit 1
+          fi
+          target="$PUBLIC_HTML/split-four"
+          ssh -i ~/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes ade14134@157.230.242.227 "mkdir -p '$target'"
+          scp -i ~/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes index.html styles.css script.js zip.js "ade14134@157.230.242.227:$target/"
