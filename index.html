@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>四宮格圖片切割工具</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -12,18 +13,41 @@
         <div class="intro">
           <p class="eyebrow">Split Four</p>
           <h1 id="app-title">四宮格圖片切割工具</h1>
-          <p>上傳一張 2x2 四宮格圖片，系統會自動切成四張獨立圖片，保留原始解析度。</p>
+          <p>上傳一張圖片，系統會自動切成多張獨立圖片，保留原始解析度。</p>
         </div>
 
         <label class="upload-zone" for="imageInput" id="dropZone">
           <input id="imageInput" type="file" accept="image/*" />
           <span class="upload-icon" aria-hidden="true">+</span>
-          <span class="upload-title">選擇圖片或拖曳到這裡</span>
-          <span class="upload-meta">支援 JPG、PNG、WEBP 等常見圖片格式</span>
+          <span class="upload-title">選擇圖片、拖曳或直接貼上</span>
+          <span class="upload-meta">支援 JPG、PNG、WEBP 等常見圖片格式（Ctrl+V 可貼上截圖）</span>
         </label>
 
+        <div class="options">
+          <label class="option">
+            <span>切割方式</span>
+            <select id="gridSelect">
+              <option value="2x2" selected>2 x 2（四宮格）</option>
+              <option value="3x3">3 x 3（九宮格）</option>
+              <option value="2x1">左右對切（2 x 1）</option>
+              <option value="1x2">上下對切（1 x 2）</option>
+            </select>
+          </label>
+          <label class="option">
+            <span>輸出格式</span>
+            <select id="formatSelect">
+              <option value="original" selected>沿用原始格式</option>
+              <option value="png">PNG</option>
+              <option value="jpeg">JPG</option>
+              <option value="webp">WEBP</option>
+            </select>
+          </label>
+        </div>
+
         <div class="actions">
-          <button id="downloadAll" class="primary-button" type="button" disabled>下載全部</button>
+          <button id="downloadAll" class="primary-button" type="button" disabled>
+            下載全部（ZIP）
+          </button>
           <button id="resetButton" class="ghost-button" type="button" disabled>重新選擇</button>
         </div>
       </section>
@@ -34,23 +58,21 @@
           <p id="statusText">尚未上傳圖片</p>
         </div>
 
-        <div class="preview-grid" id="previewGrid">
-          <article class="tile placeholder">
-            <span>左上</span>
-          </article>
-          <article class="tile placeholder">
-            <span>右上</span>
-          </article>
-          <article class="tile placeholder">
-            <span>左下</span>
-          </article>
-          <article class="tile placeholder">
-            <span>右下</span>
-          </article>
-        </div>
+        <div class="preview-grid" id="previewGrid"></div>
       </section>
     </main>
 
+    <template id="tileTemplate">
+      <article class="tile">
+        <div class="tile-media"><img alt="" /></div>
+        <div class="tile-footer">
+          <span></span>
+          <button class="download-button" type="button">下載</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="zip.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
