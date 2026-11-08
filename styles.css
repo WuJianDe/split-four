@@ -49,8 +49,14 @@ body {
     linear-gradient(135deg, rgba(15, 118, 110, 0.14), transparent 34%),
     linear-gradient(315deg, rgba(210, 92, 62, 0.12), transparent 32%), var(--bg);
   font-family:
-    Inter, "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+    Inter,
+    "Noto Sans TC",
+    "Microsoft JhengHei",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 button,
@@ -195,7 +201,8 @@ h1 {
   font-weight: 800;
 }
 
-.option select {
+.option select,
+.option input {
   min-height: 42px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -205,7 +212,15 @@ h1 {
   font-weight: 600;
 }
 
-.option select:disabled {
+.option input {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-weight: 600;
+}
+
+.option select:disabled,
+.option input:disabled {
   cursor: not-allowed;
   opacity: 0.42;
 }
@@ -288,6 +303,7 @@ button:disabled {
 }
 
 .tile {
+  container-type: inline-size;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -338,6 +354,7 @@ button:disabled {
 .download-button {
   min-height: 36px;
   padding: 0 12px;
+  white-space: nowrap;
   color: var(--bg);
   background: var(--ink);
   font-size: 0.86rem;
@@ -345,6 +362,27 @@ button:disabled {
 
 .error {
   color: var(--danger);
+}
+
+/* Narrow tiles (4 x 4, small screens): stack the label above the button. */
+@container (max-width: 190px) {
+  .tile-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .tile-footer span {
+    font-size: 0.76rem;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .download-button {
+    min-height: 30px;
+    padding: 0 8px;
+  }
 }
 
 @media (max-width: 860px) {

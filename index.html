@@ -29,6 +29,7 @@
             <select id="gridSelect">
               <option value="2x2" selected>2 x 2（四宮格）</option>
               <option value="3x3">3 x 3（九宮格）</option>
+              <option value="4x4">4 x 4（十六宮格）</option>
               <option value="2x1">左右對切（2 x 1）</option>
               <option value="1x2">上下對切（1 x 2）</option>
             </select>
@@ -41,6 +42,47 @@
               <option value="jpeg">JPG</option>
               <option value="webp">WEBP</option>
             </select>
+          </label>
+          <label class="option">
+            <span>輸出尺寸</span>
+            <select id="sizeModeSelect">
+              <option value="original" selected>原始像素</option>
+              <option value="custom">指定寬高</option>
+            </select>
+          </label>
+          <label class="option">
+            <span>比例不符時</span>
+            <select id="fitSelect" disabled>
+              <option value="cover" selected>填滿並裁切</option>
+              <option value="contain">完整保留（補白邊）</option>
+              <option value="stretch">拉伸變形</option>
+            </select>
+          </label>
+          <label class="option">
+            <span>寬度（px）</span>
+            <input
+              id="widthInput"
+              type="number"
+              min="1"
+              max="8192"
+              step="1"
+              value="320"
+              inputmode="numeric"
+              disabled
+            />
+          </label>
+          <label class="option">
+            <span>高度（px）</span>
+            <input
+              id="heightInput"
+              type="number"
+              min="1"
+              max="8192"
+              step="1"
+              value="320"
+              inputmode="numeric"
+              disabled
+            />
           </label>
         </div>
 

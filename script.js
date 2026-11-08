@@ -7,6 +7,12 @@ const resetButton = document.querySelector("#resetButton");
 const gridSelect = document.querySelector("#gridSelect");
 const formatSelect = document.querySelector("#formatSelect");
 const tileTemplate = document.querySelector("#tileTemplate");
+const sizeModeSelect = document.querySelector("#sizeModeSelect");
+const fitSelect = document.querySelector("#fitSelect");
+const widthInput = document.querySelector("#widthInput");
+const heightInput = document.querySelector("#heightInput");
+
+const MAX_OUTPUT_SIZE = 8192;
 
 const QUARTER_LABELS = ["左上", "右上", "左下", "右下"];
 const QUARTER_SUFFIXES = ["top-left", "top-right", "bottom-left", "bottom-right"];
@@ -66,6 +72,112 @@ document.addEventListener("paste", (event) => {
 
 gridSelect.addEventListener("change", () => (source ? processSource() : renderPlaceholders()));
 formatSelect.addEventListener("change", () => source && processSource());
+sizeModeSelect.addEventListener("change", () => {
+  syncSizeControls();
+  if (source) {
+    processSource();
+  }
+});
+fitSelect.addEventListener("change", () => source && processSource());
+[widthInput, heightInput].forEach((input) =>
+  input.addEventListener("change", () => {
+    const value = readSize(input);
+    input.value = value;
+    if (source) {
+      processSource();
+    }
+  }),
+);
+
+function readSize(input) {
+  const value = Math.round(Number(input.value));
+  if (!Number.isFinite(value) || value < 1) {
+    return Number(input.defaultValue) || 320;
+  }
+  return Math.min(value, MAX_OUTPUT_SIZE);
+}
+
+function getOutputSize() {
+  if (sizeModeSelect.value !== "custom") {
+    return null;
+  }
+  return { width: readSize(widthInput), height: readSize(heightInput), fit: fitSelect.value };
+}
+
+function syncSizeControls(busy = false) {
+  const custom = sizeModeSelect.value === "custom";
+  sizeModeSelect.disabled = busy;
+  fitSelect.disabled = busy || !custom;
+  widthInput.disabled = busy || !custom;
+  heightInput.disabled = busy || !custom;
+}
+
+// Returns the destination rectangle (and canvas size) for drawing a w x h slice into the target.
+function placeSlice(sliceWidth, sliceHeight, output) {
+  if (!output) {
+    return {
+      canvasWidth: sliceWidth,
+      canvasHeight: sliceHeight,
+      sx: 0,
+      sy: 0,
+      sw: sliceWidth,
+      sh: sliceHeight,
+      dx: 0,
+      dy: 0,
+      dw: sliceWidth,
+      dh: sliceHeight,
+    };
+  }
+
+  const { width, height, fit } = output;
+  const base = { canvasWidth: width, canvasHeight: height };
+  if (fit === "stretch") {
+    return {
+      ...base,
+      sx: 0,
+      sy: 0,
+      sw: sliceWidth,
+      sh: sliceHeight,
+      dx: 0,
+      dy: 0,
+      dw: width,
+      dh: height,
+    };
+  }
+
+  if (fit === "contain") {
+    const scale = Math.min(width / sliceWidth, height / sliceHeight);
+    const dw = Math.max(1, Math.round(sliceWidth * scale));
+    const dh = Math.max(1, Math.round(sliceHeight * scale));
+    return {
+      ...base,
+      sx: 0,
+      sy: 0,
+      sw: sliceWidth,
+      sh: sliceHeight,
+      dx: Math.floor((width - dw) / 2),
+      dy: Math.floor((height - dh) / 2),
+      dw,
+      dh,
+    };
+  }
+
+  // cover: crop the centre of the slice to the target aspect ratio.
+  const scale = Math.max(width / sliceWidth, height / sliceHeight);
+  const sw = Math.min(sliceWidth, width / scale);
+  const sh = Math.min(sliceHeight, height / scale);
+  return {
+    ...base,
+    sx: (sliceWidth - sw) / 2,
+    sy: (sliceHeight - sh) / 2,
+    sw,
+    sh,
+    dx: 0,
+    dy: 0,
+    dw: width,
+    dh: height,
+  };
+}
 
 downloadAll.addEventListener("click", downloadZip);
 resetButton.addEventListener("click", resetApp);
@@ -80,6 +192,7 @@ function setBusy(busy) {
   resetButton.disabled = busy || !source;
   gridSelect.disabled = busy;
   formatSelect.disabled = busy;
+  syncSizeControls(busy);
 }
 
 async function handleFile(file) {
@@ -130,7 +243,9 @@ async function processSource(existingRequest) {
 
     const { bitmap } = source;
     const { cols, rows } = parseGrid();
-    setStatus(`${bitmap.width} x ${bitmap.height} 已切成 ${cols * rows} 張`);
+    const output = getOutputSize();
+    const sizeNote = output ? `，每張 ${output.width} x ${output.height}` : "";
+    setStatus(`${bitmap.width} x ${bitmap.height} 已切成 ${cols * rows} 張${sizeNote}`);
     setBusy(false);
   } catch (error) {
     if (request !== latestRequest) {
@@ -167,6 +282,7 @@ function describePiece(cols, rows, row, col) {
 async function splitImage({ bitmap, name, type }) {
   const { cols, rows } = parseGrid();
   const format = resolveFormat(type);
+  const output = getOutputSize();
   const baseName = name.replace(/\.[^.]+$/, "") || "split-four";
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
@@ -180,21 +296,35 @@ async function splitImage({ bitmap, name, type }) {
         const width = Math.floor((bitmap.width * (col + 1)) / cols) - x;
         const height = Math.floor((bitmap.height * (row + 1)) / rows) - y;
 
-        canvas.width = width;
-        canvas.height = height;
-        if (format.mime === "image/jpeg") {
+        const place = placeSlice(width, height, output);
+        canvas.width = place.canvasWidth;
+        canvas.height = place.canvasHeight;
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+        // JPG has no alpha, and "contain" leaves margins: fill both with white.
+        if (format.mime === "image/jpeg" || output?.fit === "contain") {
           context.fillStyle = "#ffffff";
-          context.fillRect(0, 0, width, height);
+          context.fillRect(0, 0, place.canvasWidth, place.canvasHeight);
         }
-        context.drawImage(bitmap, x, y, width, height, 0, 0, width, height);
+        context.drawImage(
+          bitmap,
+          x + place.sx,
+          y + place.sy,
+          place.sw,
+          place.sh,
+          place.dx,
+          place.dy,
+          place.dw,
+          place.dh,
+        );
 
         const blob = await canvasToBlob(canvas, format.mime);
         const { label, suffix } = describePiece(cols, rows, row, col);
         result.push({
           label,
           filename: `${baseName}-${suffix}.${format.ext}`,
-          width,
-          height,
+          width: place.canvasWidth,
+          height: place.canvasHeight,
           blob,
           url: URL.createObjectURL(blob),
         });
