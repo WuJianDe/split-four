@@ -287,7 +287,7 @@ async function splitImage({ bitmap, name, type }) {
   const { cols, rows } = parseGrid();
   const format = resolveFormat(type);
   const output = getOutputSize();
-  const baseName = name.replace(/\.[^.]+$/, "") || "split-four";
+  const baseName = name.replace(/\.[^.]+$/, "") || "image-splitter";
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const result = [];
@@ -415,7 +415,7 @@ async function downloadZip() {
       })),
     );
     const url = URL.createObjectURL(createZip(files));
-    const baseName = source?.name.replace(/\.[^.]+$/, "") || "split-four";
+    const baseName = source?.name.replace(/\.[^.]+$/, "") || "image-splitter";
     saveBlobUrl(url, `${baseName}-split.zip`);
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   } finally {
