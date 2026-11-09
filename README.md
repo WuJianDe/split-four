@@ -44,4 +44,4 @@ package.json 格式化工具與指令
 
 ## 部署
 
-專案包含 GitHub Actions 工作流程：推送至 `main` 或手動觸發時，透過 SSH 將四個網頁檔案上傳至 Cloudways。工作流程需要設定 `CLOUDWAYS_SSH_PRIVATE_KEY` 與 `CLOUDWAYS_SSH_KNOWN_HOSTS` repository secrets；部署目標設定於 `.github/workflows/deploy.yml`。
+專案包含 GitHub Actions 工作流程：推送至 `main` 或手動觸發時，透過 SSH 將四個網頁檔案上傳至 Cloudways。工作流程需要設定 `DEPLOY_SSH_KEY` 與 `CLOUDWAYS_SSH_KNOWN_HOSTS` repository secrets；部署目標設定於 `.github/workflows/deploy.yml`。

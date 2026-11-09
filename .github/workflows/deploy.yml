@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Configure SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.CLOUDWAYS_SSH_KNOWN_HOSTS }}
         run: |
           set -eu
