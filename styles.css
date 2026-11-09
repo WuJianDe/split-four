@@ -219,6 +219,10 @@ h1 {
   font-weight: 600;
 }
 
+.option[hidden] {
+  display: none;
+}
+
 .option select:disabled,
 .option input:disabled {
   cursor: not-allowed;

@@ -110,6 +110,10 @@ function syncSizeControls(busy = false) {
   fitSelect.disabled = busy || !custom;
   widthInput.disabled = busy || !custom;
   heightInput.disabled = busy || !custom;
+  // Only show the size fields when they apply, so a greyed-out "320" is never mistaken for the active size.
+  [fitSelect, widthInput, heightInput].forEach((control) => {
+    control.closest(".option").hidden = !custom;
+  });
 }
 
 // Returns the destination rectangle (and canvas size) for drawing a w x h slice into the target.
@@ -244,7 +248,7 @@ async function processSource(existingRequest) {
     const { bitmap } = source;
     const { cols, rows } = parseGrid();
     const output = getOutputSize();
-    const sizeNote = output ? `，每張 ${output.width} x ${output.height}` : "";
+    const sizeNote = output ? `，每張 ${output.width} x ${output.height}` : "（原始像素）";
     setStatus(`${bitmap.width} x ${bitmap.height} 已切成 ${cols * rows} 張${sizeNote}`);
     setBusy(false);
   } catch (error) {
@@ -444,4 +448,5 @@ function showError(message) {
   statusText.textContent = message;
 }
 
+syncSizeControls();
 renderPlaceholders();
