@@ -38,5 +38,8 @@ jobs:
             exit 1
           fi
           target="$PUBLIC_HTML/split-four"
+          # Cache-bust asset URLs so Varnish/browsers fetch the new files.
+          sed -i "s/?v=dev/?v=${GITHUB_SHA::8}/g" index.html
+          grep -q "?v=${GITHUB_SHA::8}" index.html
           ssh -i ~/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes ade14134@157.230.242.227 "mkdir -p '$target'"
           scp -O -i ~/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes index.html styles.css script.js zip.js "ade14134@157.230.242.227:$target/"
