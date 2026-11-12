@@ -183,6 +183,8 @@ function placeSlice(sliceWidth, sliceHeight, output) {
   };
 }
 
+const downloadImages = document.querySelector("#downloadImages");
+downloadImages.addEventListener("click", downloadAllImages);
 downloadAll.addEventListener("click", downloadZip);
 resetButton.addEventListener("click", resetApp);
 
@@ -193,6 +195,7 @@ function parseGrid() {
 
 function setBusy(busy) {
   downloadAll.disabled = busy || pieces.length === 0;
+  downloadImages.disabled = busy || pieces.length === 0;
   resetButton.disabled = busy || !source;
   gridSelect.disabled = busy;
   formatSelect.disabled = busy;
@@ -398,6 +401,24 @@ function saveBlobUrl(url, filename) {
 
 function downloadPiece(piece) {
   saveBlobUrl(piece.url, piece.filename);
+}
+
+// Saves every piece as its own image file, spaced out so browsers don't drop rapid-fire downloads.
+async function downloadAllImages() {
+  const snapshot = pieces;
+  if (snapshot.length === 0) {
+    return;
+  }
+
+  downloadImages.disabled = true;
+  try {
+    for (const piece of snapshot) {
+      saveBlobUrl(piece.url, piece.filename);
+      await new Promise((resolve) => window.setTimeout(resolve, 300));
+    }
+  } finally {
+    downloadImages.disabled = pieces.length === 0;
+  }
 }
 
 async function downloadZip() {
