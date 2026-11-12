@@ -11,6 +11,7 @@ const sizeModeSelect = document.querySelector("#sizeModeSelect");
 const fitSelect = document.querySelector("#fitSelect");
 const widthInput = document.querySelector("#widthInput");
 const heightInput = document.querySelector("#heightInput");
+const trimInput = document.querySelector("#trimInput");
 
 const MAX_OUTPUT_SIZE = 8192;
 
@@ -79,6 +80,10 @@ sizeModeSelect.addEventListener("change", () => {
   }
 });
 fitSelect.addEventListener("change", () => source && processSource());
+trimInput.addEventListener("change", () => {
+  trimInput.value = readTrim();
+  if (source) processSource();
+});
 [widthInput, heightInput].forEach((input) =>
   input.addEventListener("change", () => {
     const value = readSize(input);
@@ -95,6 +100,11 @@ function readSize(input) {
     return Number(input.defaultValue) || 320;
   }
   return Math.min(value, MAX_OUTPUT_SIZE);
+}
+
+function readTrim() {
+  const value = Number(trimInput.value);
+  return Number.isFinite(value) ? Math.min(MAX_OUTPUT_SIZE, Math.max(0, Math.round(value))) : 0;
 }
 
 function getOutputSize() {
@@ -199,6 +209,7 @@ function setBusy(busy) {
   resetButton.disabled = busy || !source;
   gridSelect.disabled = busy;
   formatSelect.disabled = busy;
+  trimInput.disabled = busy;
   syncSizeControls(busy);
 }
 
@@ -260,7 +271,11 @@ async function processSource(existingRequest) {
     }
     clearPieces();
     setBusy(false);
-    showError("圖片過大或格式不支援，無法輸出切片");
+    showError(
+      error.message === "Trim too large"
+        ? "裁切像素過大，請減少四周裁切的數值"
+        : "圖片過大或格式不支援，無法輸出切片",
+    );
   }
 }
 
@@ -290,6 +305,10 @@ async function splitImage({ bitmap, name, type }) {
   const { cols, rows } = parseGrid();
   const format = resolveFormat(type);
   const output = getOutputSize();
+  const trim = readTrim();
+  if (Math.floor(bitmap.width / cols) <= trim * 2 || Math.floor(bitmap.height / rows) <= trim * 2) {
+    throw new Error("Trim too large");
+  }
   const baseName = name.replace(/\.[^.]+$/, "") || "image-splitter";
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
@@ -303,7 +322,7 @@ async function splitImage({ bitmap, name, type }) {
         const width = Math.floor((bitmap.width * (col + 1)) / cols) - x;
         const height = Math.floor((bitmap.height * (row + 1)) / rows) - y;
 
-        const place = placeSlice(width, height, output);
+        const place = placeSlice(width - trim * 2, height - trim * 2, output);
         canvas.width = place.canvasWidth;
         canvas.height = place.canvasHeight;
         context.imageSmoothingEnabled = true;
@@ -315,8 +334,8 @@ async function splitImage({ bitmap, name, type }) {
         }
         context.drawImage(
           bitmap,
-          x + place.sx,
-          y + place.sy,
+          x + trim + place.sx,
+          y + trim + place.sy,
           place.sw,
           place.sh,
           place.dx,

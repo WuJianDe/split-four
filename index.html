@@ -13,7 +13,9 @@
         <div class="intro">
           <p class="eyebrow">Image Splitter</p>
           <h1 id="app-title">圖片切割工具</h1>
-          <p>上傳一張圖片，即可依宮格或對切方式拆分為多張獨立圖片，支援原始像素、指定寬高與格式轉換。</p>
+          <p>
+            上傳一張圖片，即可依宮格或對切方式拆分為多張獨立圖片，支援原始像素、指定寬高與格式轉換。
+          </p>
         </div>
 
         <label class="upload-zone" for="imageInput" id="dropZone">
@@ -49,6 +51,18 @@
               <option value="original" selected>原始像素</option>
               <option value="custom">指定寬高</option>
             </select>
+          </label>
+          <label class="option">
+            <span>每張四周裁切（px）</span>
+            <input
+              id="trimInput"
+              type="number"
+              min="0"
+              max="8192"
+              step="1"
+              value="0"
+              inputmode="numeric"
+            />
           </label>
           <label class="option" hidden>
             <span>比例不符時</span>
@@ -90,9 +104,7 @@
           <button id="downloadImages" class="primary-button" type="button" disabled>
             下載全部圖片
           </button>
-          <button id="downloadAll" class="ghost-button" type="button" disabled>
-            下載 ZIP
-          </button>
+          <button id="downloadAll" class="ghost-button" type="button" disabled>下載 ZIP</button>
           <button id="resetButton" class="ghost-button" type="button" disabled>重新選擇</button>
         </div>
       </section>
